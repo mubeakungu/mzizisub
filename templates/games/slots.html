@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Slots Game - Luck2x Casino{% endblock %}
+{% block content %}
+<div class="container game-container">
+    <div class="mb-4"><h2>🎰 Slots Game</h2><a href="/games" class="btn btn-secondary">← Back</a></div>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card"><div class="card-body">
+                <div class="slots-display" id="slotsDisplay" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;">
+                    <div style="width:80px;height:80px;background:#667eea;color:white;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:2rem;">?</div>
+                    <div style="width:80px;height:80px;background:#667eea;color:white;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:2rem;">?</div>
+                    <div style="width:80px;height:80px;background:#667eea;color:white;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:2rem;">?</div>
+                    <div style="width:80px;height:80px;background:#667eea;color:white;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:2rem;">?</div>
+                    <div style="width:80px;height:80px;background:#667eea;color:white;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:2rem;">?</div>
+                </div>
+
+                <div class="mb-3"><label>Paylines (1-25)</label><input type="number" id="lines" value="25" min="1" max="25"></div>
+                <div class="mb-3"><label>Bet (KES)</label><input type="number" id="betAmount" value="100"></div>
+                <button id="spinBtn" class="btn btn-primary btn-lg">🎰 SPIN</button>
+
+                <div id="result" class="alert mt-3 hidden"></div>
+                <h5 class="mt-3">Multiplier: <span id="multiplier">0x</span> | Win: <span id="payout">KES 0</span></h5>
+            </div></div>
+        </div>
+        <div class="col-lg-4"><div class="card"><div class="card-body">
+            <h5>Slots Machine</h5><p>25 Paylines | 7 Symbols</p><p>Max Win: 50x</p><p>RTP: 94%</p>
+        </div></div></div>
+    </div>
+</div>
+
+<script>
+document.getElementById('spinBtn').addEventListener('click', spinSlots);
+
+async function spinSlots() {
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+    const lines = parseInt(document.getElementById('lines').value);
+    const userId = sessionStorage.getItem('user_id');
+
+    document.getElementById('spinBtn').disabled = true;
+
+    const response = await fetch('/api/games/slots/spin', {
+        method: 'POST',
+        headers: {'User-ID': userId, 'Content-Type': 'application/json'},
+        body: JSON.stringify({bet_amount: betAmount, lines: lines})
+    });
+
+    const data = await response.json();
+
+    setTimeout(() => {
+        const display = document.getElementById('slotsDisplay');
+        display.innerHTML = data.reels.map(r => 
+            `<div style="width:80px;height:80px;background:#667eea;color:white;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:2rem;">${r}</div>`
+        ).join('');
+
+        document.getElementById('multiplier').textContent = data.multiplier.toFixed(1) + 'x';
+        document.getElementById('payout').textContent = 'KES ' + data.payout.toFixed(0);
+
+        const resultEl = document.getElementById('result');
+        if (data.result === 'win') {
+            resultEl.className = 'alert alert-success';
+            resultEl.textContent = `🎉 BIG WIN! +KES ${data.payout.toFixed(0)}`;
+        } else {
+            resultEl.className = 'alert alert-warning';
+            resultEl.textContent = 'No win this spin';
+        }
+        resultEl.classList.remove('hidden');
+        document.getElementById('spinBtn').disabled = false;
+    }, 1000);
+}
+</script>
+{% endblock %}

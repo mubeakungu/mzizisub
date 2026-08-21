@@ -1,0 +1,495 @@
+{% extends 'base.html' %}
+
+{% block title %}Dice Game - Luck2x Casino{% endblock %}
+
+{% block content %}
+<div class="container game-container dice-container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="game-board">
+                <div class="game-header">
+                    <h2>🎲 Dice Game</h2>
+                    <div class="back-button">
+                        <a href="/games" class="btn btn-secondary">← Back</a>
+                    </div>
+                </div>
+
+                <div class="game-area">
+                    <div class="dice-display" id="diceDisplay">
+                        <div class="dice">?</div>
+                    </div>
+
+                    <div class="game-controls">
+                        <div class="bet-section">
+                            <label>Bet Amount (KES)</label>
+                            <div class="input-group">
+                                <input type="number" id="betAmount" value="100" min="1" max="10000">
+                                <div class="quick-bets">
+                                    <button class="quick-bet" data-amount="50">50</button>
+                                    <button class="quick-bet" data-amount="100">100</button>
+                                    <button class="quick-bet" data-amount="500">500</button>
+                                    <button class="quick-bet" data-amount="1000">1K</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="number-selection">
+                            <label>Pick Your Number</label>
+                            <div class="numbers">
+                                <button class="number-btn" data-number="1">1</button>
+                                <button class="number-btn" data-number="2">2</button>
+                                <button class="number-btn" data-number="3">3</button>
+                                <button class="number-btn" data-number="4">4</button>
+                                <button class="number-btn" data-number="5">5</button>
+                                <button class="number-btn" data-number="6">6</button>
+                            </div>
+                        </div>
+
+                        <div class="multiplier-display">
+                            <span class="label">Win Multiplier:</span>
+                            <span class="value">5x</span>
+                        </div>
+
+                        <button id="playBtn" class="btn btn-primary btn-lg">ROLL DICE</button>
+                    </div>
+
+                    <div id="resultDisplay" class="result-display hidden">
+                        <div class="result-content">
+                            <h3 id="resultText">You Won! 🎉</h3>
+                            <p class="result-amount" id="resultAmount">Won: KES 500</p>
+                            <button id="playAgainBtn" class="btn btn-primary">Play Again</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="info-panel">
+                <h4>Game Info</h4>
+                <div class="info-item">
+                    <span class="label">RTP:</span>
+                    <span class="value">96%</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Win Chance:</span>
+                    <span class="value">16.67%</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Max Win:</span>
+                    <span class="value">5x Bet</span>
+                </div>
+
+                <hr>
+
+                <h5>Recent Plays</h5>
+                <div id="historyList" class="history-list">
+                    <p class="text-muted">No games yet</p>
+                </div>
+
+                <hr>
+
+                <h5>Your Stats</h5>
+                <div class="stats-mini">
+                    <div class="stat">
+                        <span class="label">Played:</span>
+                        <span id="gamesPlayed" class="value">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Won:</span>
+                        <span id="gamesWon" class="value">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Win Rate:</span>
+                        <span id="winRate" class="value">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.dice-container {
+    margin-top: 2rem;
+}
+
+.game-area {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 3rem;
+    color: white;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.dice-display {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.dice {
+    width: 120px;
+    height: 120px;
+    background: white;
+    color: #667eea;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    font-weight: bold;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.dice.rolling {
+    animation: diceRoll 0.6s ease-out;
+}
+
+@keyframes diceRoll {
+    0% { transform: rotateX(0) rotateY(0); }
+    50% { transform: rotateX(720deg) rotateY(720deg); }
+    100% { transform: rotateX(0) rotateY(0); }
+}
+
+.game-controls {
+    width: 100%;
+    max-width: 500px;
+}
+
+.bet-section {
+    margin-bottom: 2rem;
+}
+
+.bet-section label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.bet-section input {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.quick-bets {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.quick-bet {
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid white;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-bet:hover {
+    background: white;
+    color: #667eea;
+}
+
+.number-selection {
+    margin-bottom: 2rem;
+}
+
+.number-selection label {
+    display: block;
+    margin-bottom: 1rem;
+    font-weight: bold;
+}
+
+.numbers {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
+}
+
+.number-btn {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+    color: white;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.number-btn:hover,
+.number-btn.active {
+    background: white;
+    color: #667eea;
+    transform: scale(1.1);
+}
+
+.multiplier-display {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.multiplier-display .label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.multiplier-display .value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+#playBtn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.result-display {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    z-index: 10;
+}
+
+.result-display.hidden {
+    display: none;
+}
+
+.result-content {
+    text-align: center;
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    color: #333;
+}
+
+.result-content h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.result-amount {
+    font-size: 1.5rem;
+    color: #28a745;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+}
+
+.info-panel {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 15px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+}
+
+.info-item .label {
+    font-weight: bold;
+}
+
+.history-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 0.75rem;
+    background: white;
+    border-radius: 5px;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.history-item.win {
+    border-left: 3px solid #28a745;
+}
+
+.history-item.loss {
+    border-left: 3px solid #dc3545;
+}
+
+.stats-mini {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.stat {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat .label {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.stat .value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #667eea;
+}
+</style>
+
+<script>
+let selectedNumber = null;
+let isPlaying = false;
+
+document.querySelectorAll('.number-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.number-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        selectedNumber = parseInt(this.dataset.number);
+    });
+});
+
+document.querySelectorAll('.quick-bet').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('betAmount').value = this.dataset.amount;
+    });
+});
+
+document.getElementById('playBtn').addEventListener('click', playDice);
+document.getElementById('playAgainBtn').addEventListener('click', resetGame);
+
+async function playDice() {
+    if (!selectedNumber) {
+        alert('Please select a number!');
+        return;
+    }
+
+    if (isPlaying) return;
+    isPlaying = true;
+
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+    const userId = sessionStorage.getItem('user_id');
+
+    try {
+        // Animate dice
+        const diceElement = document.querySelector('.dice');
+        diceElement.classList.add('rolling');
+
+        const response = await fetch('/api/games/dice/play', {
+            method: 'POST',
+            headers: {
+                'User-ID': userId,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                bet_amount: betAmount,
+                number: selectedNumber
+            })
+        });
+
+        const data = await response.json();
+
+        setTimeout(() => {
+            diceElement.classList.remove('rolling');
+            diceElement.textContent = data.dice_result;
+
+            // Show result
+            const resultDisplay = document.getElementById('resultDisplay');
+            const resultText = document.getElementById('resultText');
+            const resultAmount = document.getElementById('resultAmount');
+
+            if (data.result === 'win') {
+                resultText.textContent = `You Won! 🎉`;
+                resultText.style.color = '#28a745';
+                resultAmount.textContent = `Won: KES ${data.payout.toFixed(2)}`;
+            } else {
+                resultText.textContent = `You Lost 😢`;
+                resultText.style.color = '#dc3545';
+                resultAmount.textContent = `Lost: KES ${betAmount.toFixed(2)}`;
+            }
+
+            resultDisplay.classList.remove('hidden');
+
+            // Add to history
+            addToHistory(data);
+            loadStats();
+        }, 600);
+
+    } catch (err) {
+        console.error('Error:', err);
+        alert('Error playing game');
+    } finally {
+        isPlaying = false;
+    }
+}
+
+function resetGame() {
+    document.getElementById('resultDisplay').classList.add('hidden');
+    document.querySelector('.dice').textContent = '?';
+}
+
+function addToHistory(game) {
+    const historyList = document.getElementById('historyList');
+    if (historyList.children.length === 1 && historyList.children[0].classList.contains('text-muted')) {
+        historyList.innerHTML = '';
+    }
+
+    const item = document.createElement('div');
+    item.className = `history-item ${game.result}`;
+    item.innerHTML = `
+        <strong>${game.player_number}</strong> vs ${game.dice_result} 
+        <span style="float: right; ${game.result === 'win' ? 'color: #28a745' : 'color: #dc3545'}">
+            ${game.result === 'win' ? '+' : '-'}KES ${Math.abs(game.payout).toFixed(0)}
+        </span>
+    `;
+    historyList.insertBefore(item, historyList.firstChild);
+}
+
+function loadStats() {
+    const userId = sessionStorage.getItem('user_id');
+    fetch('/api/games/history/dice?limit=100', {
+        headers: { 'User-ID': userId }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.games && data.games.length > 0) {
+            const wins = data.games.filter(g => g.result === 'win').length;
+            document.getElementById('gamesPlayed').textContent = data.games.length;
+            document.getElementById('gamesWon').textContent = wins;
+            document.getElementById('winRate').textContent = 
+                ((wins / data.games.length) * 100).toFixed(1) + '%';
+        }
+    });
+}
+
+// Load stats on page load
+document.addEventListener('DOMContentLoaded', loadStats);
+</script>
+{% endblock %}

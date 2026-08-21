@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Hi-Lo Game - Luck2x Casino{% endblock %}
+
+{% block content %}
+<div class="container game-container hilo-container">
+    <div class="game-header mb-4">
+        <h2>🎴 Hi-Lo Game</h2>
+        <a href="/games" class="btn btn-secondary">← Back</a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card game-area">
+                <div class="cards-display">
+                    <div class="card-slot">
+                        <h5>Current Card</h5>
+                        <div id="currentCard" class="card-large">?</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="card-slot">
+                        <h5>Next Card</h5>
+                        <div id="nextCard" class="card-large hidden">?</div>
+                    </div>
+                </div>
+
+                <div class="prediction-buttons">
+                    <button id="highBtn" class="btn btn-lg btn-outline-primary">📈 HIGHER</button>
+                    <button id="lowBtn" class="btn btn-lg btn-outline-primary">📉 LOWER</button>
+                </div>
+
+                <div class="bet-controls">
+                    <label>Bet Amount (KES)</label>
+                    <input type="number" id="betAmount" value="100">
+                </div>
+
+                <button id="playBtn" class="btn btn-primary btn-lg w-100">PLAY</button>
+
+                <div id="resultAlert" class="alert hidden mt-3"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="info-panel">
+                <h5>Statistics</h5>
+                <div class="stat-item">
+                    <span>Games Played:</span>
+                    <span id="gamesPlayed">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Win Rate:</span>
+                    <span id="winRate">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Multiplier:</span>
+                    <span>1.9x</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let prediction = null;
+
+document.getElementById('highBtn').addEventListener('click', () => {
+    prediction = 'high';
+    document.getElementById('highBtn').classList.add('active');
+    document.getElementById('lowBtn').classList.remove('active');
+});
+
+document.getElementById('lowBtn').addEventListener('click', () => {
+    prediction = 'low';
+    document.getElementById('lowBtn').classList.add('active');
+    document.getElementById('highBtn').classList.remove('active');
+});
+
+document.getElementById('playBtn').addEventListener('click', playHilo);
+
+async function playHilo() {
+    if (!prediction) {
+        alert('Select High or Low');
+        return;
+    }
+
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+    const userId = sessionStorage.getItem('user_id');
+
+    try {
+        const response = await fetch('/api/games/hilo/play', {
+            method: 'POST',
+            headers: {
+                'User-ID': userId,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                bet_amount: betAmount,
+                prediction: prediction
+            })
+        });
+
+        const data = await response.json();
+
+        document.getElementById('currentCard').textContent = data.current_card;
+        document.getElementById('nextCard').textContent = data.next_card;
+        document.getElementById('nextCard').classList.remove('hidden');
+
+        const resultAlert = document.getElementById('resultAlert');
+        resultAlert.classList.remove('hidden');
+
+        if (data.result === 'win') {
+            resultAlert.className = 'alert alert-success';
+            resultAlert.textContent = `Won! 🎉 +KES ${data.payout.toFixed(0)}`;
+        } else {
+            resultAlert.className = 'alert alert-danger';
+            resultAlert.textContent = `Lost! 😢 -KES ${betAmount.toFixed(0)}`;
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+</script>
+
+<style>
+.cards-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    margin: 3rem 0;
+}
+
+.card-slot {
+    text-align: center;
+}
+
+.card-large {
+    width: 120px;
+    height: 160px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.card-large.hidden {
+    opacity: 0;
+}
+
+.prediction-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.prediction-buttons .btn.active {
+    background-color: #667eea;
+    color: white;
+}
+
+.bet-controls {
+    margin: 2rem 0;
+}
+
+.bet-controls input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+</style>
+{% endblock %}

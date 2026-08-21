@@ -1,0 +1,49 @@
+# Luck2x Casino Games Module Requirements
+# Python 3.8+
+
+# Core Flask & Database
+Flask==2.3.0
+Flask-SQLAlchemy==3.0.5
+SQLAlchemy==2.0.0
+psycopg2-binary==2.9.6
+
+# Task Queue & Background Jobs
+Celery==5.3.0
+redis==4.5.0
+
+# API & Validation
+marshmallow==3.19.0
+python-dotenv==1.0.0
+
+# Cryptography & Security
+cryptography==40.0.0
+PyJWT==2.6.0
+bcrypt==4.0.1
+
+# Caching & Performance
+Flask-Caching==2.0.2
+
+# Monitoring & Logging
+python-json-logger==2.0.7
+sentry-sdk==1.24.0
+
+# Testing
+pytest==7.3.0
+pytest-cov==4.1.0
+factory-boy==3.2.1
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2023.3
+requests==2.31.0
+
+# M-Pesa Integration (Kenya)
+mpesa-api==0.2.0
+
+# Data Analysis (for analytics)
+pandas==2.0.0
+numpy==1.24.0
+
+# Optional: Real-time Updates
+python-socketio==5.9.0
+python-engineio==4.5.1

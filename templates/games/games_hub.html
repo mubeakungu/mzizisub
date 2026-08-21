@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}Play Games - Luck2x Casino{% endblock %}
+
+{% block content %}
+<div class="container-fluid games-hub">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-2">🎮 Luck2x Casino Games</h1>
+            <p class="text-muted">Experience 7 exciting games with real payouts</p>
+        </div>
+    </div>
+
+    <!-- Games Grid -->
+    <div class="row g-4">
+        <!-- Dice Game -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card game-card" onclick="location.href='/games/dice'">
+                <div class="card-body text-center">
+                    <div class="game-icon">🎲</div>
+                    <h5 class="card-title mt-3">Dice Game</h5>
+                    <p class="card-text text-muted">Roll the dice and win up to 5x</p>
+                    <div class="game-stats">
+                        <small><strong>Multiplier:</strong> 5x</small><br>
+                        <small><strong>RTP:</strong> 96%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crash Game -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card game-card" onclick="location.href='/games/crash'">
+                <div class="card-body text-center">
+                    <div class="game-icon">📈</div>
+                    <h5 class="card-title mt-3">Crash</h5>
+                    <p class="card-text text-muted">Cash out before the crash!</p>
+                    <div class="game-stats">
+                        <small><strong>Max Multiplier:</strong> 10x</small><br>
+                        <small><strong>RTP:</strong> 95%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hilo Game -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card game-card" onclick="location.href='/games/hilo'">
+                <div class="card-body text-center">
+                    <div class="game-icon">🎴</div>
+                    <h5 class="card-title mt-3">Hi-Lo</h5>
+                    <p class="card-text text-muted">Predict higher or lower card</p>
+                    <div class="game-stats">
+                        <small><strong>Multiplier:</strong> 1.9x</small><br>
+                        <small><strong>RTP:</strong> 97%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mines Game -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card game-card" onclick="location.href='/games/mines'">
+                <div class="card-body text-center">
+                    <div class="game-icon">💣</div>
+                    <h5 class="card-title mt-3">Mines</h5>
+                    <p class="card-text text-muted">Avoid the mines and win big</p>
+                    <div class="game-stats">
+                        <small><strong>Max Multiplier:</strong> 10x</small><br>
+                        <small><strong>RTP:</strong> 96%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tower Game -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card game-card" onclick="location.href='/games/tower'">
+                <div class="card-body text-center">
+                    <div class="game-icon">🏔️</div>
+                    <h5 class="card-title mt-3">Tower</h5>
+                    <p class="card-text text-muted">Climb the tower to win</p>
+                    <div class="game-stats">
+                        <small><strong>Max Multiplier:</strong> 6x</small><br>
+                        <small><strong>RTP:</strong> 95%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slots Game -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card game-card" onclick="location.href='/games/slots'">
+                <div class="card-body text-center">
+                    <div class="game-icon">🎰</div>
+                    <h5 class="card-title mt-3">Slots</h5>
+                    <p class="card-text text-muted">Classic slots with 25 paylines</p>
+                    <div class="game-stats">
+                        <small><strong>Max Multiplier:</strong> 50x</small><br>
+                        <small><strong>RTP:</strong> 94%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Roulette Game -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card game-card" onclick="location.href='/games/roulette'">
+                <div class="card-body text-center">
+                    <div class="game-icon">🎡</div>
+                    <h5 class="card-title mt-3">Roulette</h5>
+                    <p class="card-text text-muted">Spin the wheel and win</p>
+                    <div class="game-stats">
+                        <small><strong>Max Multiplier:</strong> 35x</small><br>
+                        <small><strong>RTP:</strong> 97%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row mt-5">
+        <div class="col-md-3">
+            <div class="stat-box">
+                <h6 class="text-muted">Total Played</h6>
+                <h3 id="total-games">0</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box">
+                <h6 class="text-muted">Total Wagered</h6>
+                <h3 id="total-wagered">$0.00</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box">
+                <h6 class="text-muted">Total Won</h6>
+                <h3 id="total-won" class="text-success">$0.00</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box">
+                <h6 class="text-muted">Win Rate</h6>
+                <h3 id="win-rate">0%</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.game-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #e0e0e0;
+    height: 100%;
+}
+
+.game-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border-color: #ff6b6b;
+}
+
+.game-icon {
+    font-size: 4rem;
+    margin: 1rem 0;
+}
+
+.game-stats {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+}
+</style>
+
+<script>
+// Load user stats
+document.addEventListener('DOMContentLoaded', function() {
+    // This would be populated by backend
+    loadGameStats();
+});
+
+function loadGameStats() {
+    // Fetch and update game stats
+    fetch('/api/games/stats', {
+        headers: {
+            'User-ID': sessionStorage.getItem('user_id')
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.stats && data.stats.length > 0) {
+            let totalGames = 0;
+            let totalWagered = 0;
+            let totalWon = 0;
+            let totalWins = 0;
+            
+            data.stats.forEach(stat => {
+                totalGames += stat.games_played;
+                totalWagered += stat.total_bets;
+                totalWon += stat.total_wins;
+                totalWins += stat.wins_count;
+            });
+            
+            document.getElementById('total-games').textContent = totalGames;
+            document.getElementById('total-wagered').textContent = '$' + totalWagered.toFixed(2);
+            document.getElementById('total-won').textContent = '$' + totalWon.toFixed(2);
+            document.getElementById('win-rate').textContent = totalGames > 0 ? 
+                (totalWins / totalGames * 100).toFixed(1) + '%' : '0%';
+        }
+    })
+    .catch(err => console.error('Error loading stats:', err));
+}
+</script>
+{% endblock %}

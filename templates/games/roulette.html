@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Roulette Game - Luck2x Casino{% endblock %}
+{% block content %}
+<div class="container game-container">
+    <div class="mb-4"><h2>🎡 Roulette Game</h2><a href="/games" class="btn btn-secondary">← Back</a></div>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card"><div class="card-body">
+                <div style="text-align:center;margin:20px 0;">
+                    <div id="wheelNumber" style="font-size:4rem;font-weight:bold;color:#667eea;">?</div>
+                </div>
+
+                <div class="mb-3"><label>Bet Type</label>
+                    <select id="betType" class="form-control">
+                        <option value="red">🔴 Red</option>
+                        <option value="black">⚫ Black</option>
+                        <option value="even">Even</option>
+                        <option value="odd">Odd</option>
+                        <option value="number">Specific Number</option>
+                    </select>
+                </div>
+
+                <div id="numberInput" class="mb-3" style="display:none;">
+                    <label>Number (0-36)</label>
+                    <input type="number" id="betValue" min="0" max="36">
+                </div>
+
+                <div class="mb-3"><label>Bet Amount (KES)</label><input type="number" id="betAmount" value="100"></div>
+                <button id="spinBtn" class="btn btn-primary btn-lg">SPIN WHEEL</button>
+
+                <div id="result" class="alert mt-3 hidden"></div>
+                <h5 class="mt-3">Multiplier: <span id="multiplier">0x</span> | Win: <span id="payout">KES 0</span></h5>
+            </div></div>
+        </div>
+        <div class="col-lg-4"><div class="card"><div class="card-body">
+            <h5>European Roulette</h5><p>Numbers 0-36</p><p>Red/Black: 1.9x | Number: 35x</p><p>RTP: 97%</p>
+        </div></div></div>
+    </div>
+</div>
+
+<script>
+document.getElementById('betType').addEventListener('change', function() {
+    document.getElementById('numberInput').style.display = this.value === 'number' ? 'block' : 'none';
+});
+
+document.getElementById('spinBtn').addEventListener('click', spinRoulette);
+
+async function spinRoulette() {
+    const betType = document.getElementById('betType').value;
+    const betValue = betType === 'number' ? document.getElementById('betValue').value : null;
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+    const userId = sessionStorage.getItem('user_id');
+
+    document.getElementById('spinBtn').disabled = true;
+
+    const response = await fetch('/api/games/roulette/spin', {
+        method: 'POST',
+        headers: {'User-ID': userId, 'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            bet_amount: betAmount,
+            bet_type: betType,
+            bet_value: betValue
+        })
+    });
+
+    const data = await response.json();
+
+    setTimeout(() => {
+        document.getElementById('wheelNumber').textContent = data.wheel_spin;
+        document.getElementById('multiplier').textContent = data.multiplier.toFixed(2) + 'x';
+        document.getElementById('payout').textContent = 'KES ' + data.payout.toFixed(0);
+
+        const resultEl = document.getElementById('result');
+        if (data.result === 'win') {
+            resultEl.className = 'alert alert-success';
+            resultEl.textContent = `🎉 Winner! +KES ${data.payout.toFixed(0)}`;
+        } else {
+            resultEl.className = 'alert alert-danger';
+            resultEl.textContent = 'Better luck next spin!';
+        }
+        resultEl.classList.remove('hidden');
+        document.getElementById('spinBtn').disabled = false;
+    }, 1000);
+}
+</script>
+{% endblock %}

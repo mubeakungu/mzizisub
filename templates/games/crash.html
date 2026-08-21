@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}Crash Game - Luck2x Casino{% endblock %}
+
+{% block content %}
+<div class="container game-container crash-container">
+    <div class="game-header">
+        <h2>📈 Crash Game</h2>
+        <a href="/games" class="btn btn-secondary">← Back</a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="game-area crash-area">
+                <div class="crash-display">
+                    <canvas id="crashChart"></canvas>
+                </div>
+
+                <div class="multiplier-counter">
+                    <h3>Current Multiplier</h3>
+                    <div id="multiplier" class="counter">1.00x</div>
+                    <div id="gameStatus" class="status">Waiting for bet...</div>
+                </div>
+
+                <div class="crash-controls">
+                    <div class="control-group">
+                        <label>Bet Amount (KES)</label>
+                        <input type="number" id="betAmount" value="100" min="1" max="10000">
+                    </div>
+                    <button id="startBtn" class="btn btn-primary btn-lg">START GAME</button>
+                    <button id="cashoutBtn" class="btn btn-success btn-lg hidden">CASHOUT NOW</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="info-panel">
+                <h4>Game Info</h4>
+                <div class="info-item">
+                    <span>RTP: 95%</span>
+                </div>
+                <div class="info-item">
+                    <span>Max Multiplier: 10x</span>
+                </div>
+
+                <hr>
+
+                <h5>Recent Plays</h5>
+                <div id="historyList" class="history-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.crash-area {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 3rem;
+    color: white;
+    min-height: 500px;
+}
+
+.crash-display {
+    height: 250px;
+    margin-bottom: 2rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.multiplier-counter {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.counter {
+    font-size: 3rem;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    margin: 1rem 0;
+    animation: pulse 0.3s ease-in-out;
+}
+
+.counter.crashed {
+    color: #ff6b6b;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.status {
+    font-size: 1.1rem;
+}
+
+.crash-controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.control-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.control-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.control-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+#startBtn, #cashoutBtn {
+    flex: 1;
+    min-width: 150px;
+}
+
+.hidden {
+    display: none !important;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+let gameId = null;
+let isRunning = false;
+let multiplier = 1.00;
+let crashPoint = 0;
+let intervalId = null;
+let chart = null;
+
+const ctx = document.getElementById('crashChart').getContext('2d');
+initChart();
+
+function initChart() {
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Crash Chart',
+                data: [],
+                borderColor: '#fff',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: { color: '#fff' },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                },
+                x: {
+                    ticks: { color: '#fff' },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                }
+            }
+        }
+    });
+}
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('cashoutBtn').addEventListener('click', cashout);
+
+async function startGame() {
+    const betAmount = parseFloat(document.getElementById('betAmount').value);
+    const userId = sessionStorage.getItem('user_id');
+
+    if (betAmount <= 0) {
+        alert('Enter a valid bet amount');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/games/crash/start', {
+            method: 'POST',
+            headers: {
+                'User-ID': userId,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ bet_amount: betAmount })
+        });
+
+        const data = await response.json();
+        gameId = data.game_id;
+        crashPoint = data.crash_point || (Math.random() * 9 + 1);
+        multiplier = 1.00;
+        isRunning = true;
+
+        document.getElementById('startBtn').classList.add('hidden');
+        document.getElementById('cashoutBtn').classList.remove('hidden');
+        document.getElementById('gameStatus').textContent = 'Game running... 🚀';
+
+        let timeElapsed = 0;
+        intervalId = setInterval(() => {
+            timeElapsed += 0.1;
+            multiplier = 1 + (timeElapsed * 0.1);
+
+            document.getElementById('multiplier').textContent = multiplier.toFixed(2) + 'x';
+
+            // Add to chart
+            if (chart.data.labels.length < 50) {
+                chart.data.labels.push(timeElapsed.toFixed(1));
+                chart.data.datasets[0].data.push(multiplier);
+                chart.update('none');
+            }
+
+            if (multiplier >= crashPoint) {
+                crash();
+            }
+        }, 100);
+
+    } catch (err) {
+        alert('Error starting game');
+    }
+}
+
+function crash() {
+    isRunning = false;
+    clearInterval(intervalId);
+    
+    document.getElementById('multiplier').classList.add('crashed');
+    document.getElementById('gameStatus').textContent = 'Crashed! 💥';
+    document.getElementById('cashoutBtn').classList.add('hidden');
+    document.getElementById('startBtn').classList.remove('hidden');
+}
+
+async function cashout() {
+    if (!gameId || !isRunning) return;
+
+    isRunning = false;
+    clearInterval(intervalId);
+
+    const userId = sessionStorage.getItem('user_id');
+
+    try {
+        const response = await fetch(`/api/games/crash/cashout/${gameId}`, {
+            method: 'POST',
+            headers: { 'User-ID': userId }
+        });
+
+        const data = await response.json();
+
+        document.getElementById('gameStatus').textContent = 
+            `Cashed out at ${data.cashed_out_at.toFixed(2)}x - Won KES ${data.payout.toFixed(0)}`;
+        document.getElementById('cashoutBtn').classList.add('hidden');
+        document.getElementById('startBtn').classList.remove('hidden');
+
+    } catch (err) {
+        alert('Error cashing out');
+    }
+}
+</script>
+{% endblock %}
