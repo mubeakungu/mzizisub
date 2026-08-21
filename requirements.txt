@@ -36,3 +36,4 @@ numpy==1.26.4
 # Optional: Real-time Updates
 python-socketio==5.9.0
 python-engineio==4.8.0
+gunicorn==22.0.0
